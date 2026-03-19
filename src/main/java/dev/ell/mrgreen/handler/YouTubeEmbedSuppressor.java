@@ -11,8 +11,7 @@ import java.util.regex.Pattern;
 @Component
 public class YouTubeEmbedSuppressor implements MessageHandler {
 
-    private static final Pattern YOUTUBE_URL =
-            Pattern.compile("(?<![\\S])https?://(www\\.)?(youtube\\.com|music\\.youtube\\.com|youtu\\.be)/\\S+");
+    private static final Pattern YOUTUBE_MENTION = Pattern.compile("youtube\\.com|youtu\\.be");
 
     private final YouTubeService youTubeService;
 
@@ -22,17 +21,22 @@ public class YouTubeEmbedSuppressor implements MessageHandler {
 
     @Override
     public Pattern getPattern() {
-        return YOUTUBE_URL;
+        return YOUTUBE_MENTION;
     }
 
     @Override
     public void handle(MessageReceivedEvent event, Matcher matcher, CommandContext context) {
-        event.getMessage().suppressEmbeds(true).queue();
-
-        youTubeService.fetchVideoInfo(matcher.group()).ifPresent(info -> {
-            var message = "%s — %s [%s | %s views | %s]".formatted(
-                    info.title(), info.channel(), info.duration(), info.views(), info.uploadDate());
-            event.getMessage().reply(message).queue();
-        });
+        for (var embed : event.getMessage().getEmbeds()) {
+            var url = embed.getUrl();
+            if (url != null && (url.contains("youtube.com") || url.contains("youtu.be"))) {
+                event.getMessage().suppressEmbeds(true).queue();
+                youTubeService.fetchVideoInfo(url).ifPresent(info -> {
+                    var message = "%s — %s [%s | %s views | %s]".formatted(
+                            info.title(), info.channel(), info.duration(), info.views(), info.uploadDate());
+                    event.getMessage().reply(message).queue();
+                });
+                return;
+            }
+        }
     }
 }
