@@ -1,0 +1,3 @@
+--liquibase formatted sql
+--changeset mrgreen:001-init
+-- initial schema placeholder

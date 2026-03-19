@@ -207,6 +207,7 @@
           GRAFANA_OTLP_ENDPOINT={{ vault_grafana_otlp_endpoint }}
           GRAFANA_OTLP_TRACE_ENDPOINT={{ vault_grafana_otlp_trace_endpoint }}
           GRAFANA_OTLP_AUTH_HEADER={{ vault_grafana_otlp_auth_header }}
+          DB_PATH={{ app_dir }}/mrgreen.db
         dest: "{{ app_dir }}/.env"
         owner: "{{ app_user }}"
         group: "{{ app_user }}"

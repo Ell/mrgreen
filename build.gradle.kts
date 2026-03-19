@@ -27,7 +27,12 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-opentelemetry")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.liquibase:liquibase-core")
     implementation("com.fasterxml.jackson.core:jackson-databind")
+
+    runtimeOnly("org.xerial:sqlite-jdbc")
+    runtimeOnly("org.hibernate.orm:hibernate-community-dialects")
 
     implementation("net.dv8tion:JDA:5.1.0") {
         exclude(module = "opus-java")

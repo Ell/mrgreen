@@ -3,6 +3,15 @@ spring:
     web-application-type: none
   application:
     name: "mrgreen"
+  datasource:
+    url: jdbc:sqlite:${DB_PATH:mrgreen.db}
+    driver-class-name: org.sqlite.JDBC
+  jpa:
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    hibernate:
+      ddl-auto: validate
+  liquibase:
+    change-log: classpath:db/changelog/db.changelog-master.yaml
 
 discord:
   token: ${DISCORD_TOKEN}
