@@ -21,6 +21,9 @@ management:
         headers:
           Authorization: ${GRAFANA_OTLP_AUTH_HEADER:}
         step: 60s
+  tracing:
+    sampling:
+      probability: 1.0
   opentelemetry:
     tracing:
       export:

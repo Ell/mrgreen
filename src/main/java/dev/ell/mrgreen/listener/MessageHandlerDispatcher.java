@@ -42,6 +42,7 @@ public class MessageHandlerDispatcher extends ListenerAdapter {
                 if (matcher.find()) {
                     executor.submit(() -> {
                         try {
+                            log.info("Executing handler: {}", handler.getClass().getSimpleName());
                             Observation.createNotStarted("discord.handler", observationRegistry)
                                     .lowCardinalityKeyValue("name", handler.getClass().getSimpleName())
                                     .observe(() -> handler.handle(event, matcher, parsed.context()));

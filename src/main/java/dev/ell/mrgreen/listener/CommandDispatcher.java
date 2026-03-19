@@ -63,6 +63,7 @@ public class CommandDispatcher extends ListenerAdapter {
             try (var ignored = MDC.putCloseable("command", event.getName());
                  var ignored2 = MDC.putCloseable("guild", event.getGuild() != null ? event.getGuild().getId() : "DM");
                  var ignored3 = MDC.putCloseable("user", event.getUser().getId())) {
+                log.info("Executing slash command: {}", event.getName());
                 Observation.createNotStarted("discord.command", observationRegistry)
                         .lowCardinalityKeyValue("type", "slash")
                         .lowCardinalityKeyValue("name", event.getName())
@@ -91,6 +92,7 @@ public class CommandDispatcher extends ListenerAdapter {
                 try (var ignored = MDC.putCloseable("command", name);
                      var ignored2 = MDC.putCloseable("guild", event.getGuild() != null ? event.getGuild().getId() : "DM");
                      var ignored3 = MDC.putCloseable("user", event.getAuthor().getId())) {
+                    log.info("Executing prefix command: {}", name);
                     Observation.createNotStarted("discord.command", observationRegistry)
                             .lowCardinalityKeyValue("type", "prefix")
                             .lowCardinalityKeyValue("name", name)
