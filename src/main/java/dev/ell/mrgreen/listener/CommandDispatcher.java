@@ -4,7 +4,8 @@ import dev.ell.mrgreen.command.PrefixCommand;
 import dev.ell.mrgreen.command.SlashCommand;
 import dev.ell.mrgreen.config.DiscordProperties;
 import dev.ell.mrgreen.util.MessageParser;
-import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.observation.Observation;
+import io.micrometer.observation.ObservationRegistry;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -25,16 +26,16 @@ public class CommandDispatcher extends ListenerAdapter {
     private final Map<String, PrefixCommand> prefixCommands;
     private final String prefix;
     private final Set<String> bridgeBotIds;
-    private final MeterRegistry registry;
+    private final ObservationRegistry observationRegistry;
     private final ExecutorService executor = Executors.newVirtualThreadPerTaskExecutor();
 
     public CommandDispatcher(List<SlashCommand> slashList,
                              List<PrefixCommand> prefixList,
                              DiscordProperties properties,
-                             MeterRegistry registry) {
+                             ObservationRegistry observationRegistry) {
         this.prefix = properties.prefix();
         this.bridgeBotIds = new HashSet<>(properties.bridgeBotIds());
-        this.registry = registry;
+        this.observationRegistry = observationRegistry;
 
         this.slashCommands = new HashMap<>();
         for (var cmd : slashList) {
@@ -62,10 +63,11 @@ public class CommandDispatcher extends ListenerAdapter {
             try (var ignored = MDC.putCloseable("command", event.getName());
                  var ignored2 = MDC.putCloseable("guild", event.getGuild() != null ? event.getGuild().getId() : "DM");
                  var ignored3 = MDC.putCloseable("user", event.getUser().getId())) {
-                registry.counter("discord.commands", "type", "slash", "name", event.getName()).increment();
-                command.execute(event);
+                Observation.createNotStarted("discord.command", observationRegistry)
+                        .lowCardinalityKeyValue("type", "slash")
+                        .lowCardinalityKeyValue("name", event.getName())
+                        .observe(() -> command.execute(event));
             } catch (Exception e) {
-                registry.counter("discord.commands.errors", "type", "slash", "name", event.getName()).increment();
                 log.error("Error executing slash command: {}", event.getName(), e);
                 event.reply("Something went wrong.").setEphemeral(true).queue();
             }
@@ -89,10 +91,11 @@ public class CommandDispatcher extends ListenerAdapter {
                 try (var ignored = MDC.putCloseable("command", name);
                      var ignored2 = MDC.putCloseable("guild", event.getGuild() != null ? event.getGuild().getId() : "DM");
                      var ignored3 = MDC.putCloseable("user", event.getAuthor().getId())) {
-                    registry.counter("discord.commands", "type", "prefix", "name", name).increment();
-                    command.execute(event, args, parsed.context());
+                    Observation.createNotStarted("discord.command", observationRegistry)
+                            .lowCardinalityKeyValue("type", "prefix")
+                            .lowCardinalityKeyValue("name", name)
+                            .observe(() -> command.execute(event, args, parsed.context()));
                 } catch (Exception e) {
-                    registry.counter("discord.commands.errors", "type", "prefix", "name", name).increment();
                     log.error("Error executing prefix command: {}", name, e);
                     event.getChannel().sendMessage("Something went wrong.").queue();
                 }

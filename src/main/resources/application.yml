@@ -21,3 +21,10 @@ management:
         headers:
           Authorization: ${GRAFANA_OTLP_AUTH_HEADER:}
         step: 60s
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: ${GRAFANA_OTLP_BASE_ENDPOINT:}
+          headers:
+            Authorization: ${GRAFANA_OTLP_AUTH_HEADER:}

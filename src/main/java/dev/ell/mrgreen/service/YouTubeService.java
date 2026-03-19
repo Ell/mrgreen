@@ -3,7 +3,8 @@ package dev.ell.mrgreen.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.ell.mrgreen.config.GoogleProperties;
-import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.observation.Observation;
+import io.micrometer.observation.ObservationRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -30,13 +31,13 @@ public class YouTubeService {
             "https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=%s&key=%s";
 
     private final String apiKey;
-    private final MeterRegistry registry;
+    private final ObservationRegistry observationRegistry;
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public YouTubeService(GoogleProperties properties, MeterRegistry registry) {
+    public YouTubeService(GoogleProperties properties, ObservationRegistry observationRegistry) {
         this.apiKey = properties.apiKey();
-        this.registry = registry;
+        this.observationRegistry = observationRegistry;
     }
 
     public record VideoInfo(String title, String channel, String duration, String views, String uploadDate) {}
@@ -45,10 +46,14 @@ public class YouTubeService {
         var videoId = extractVideoId(url);
         if (videoId.isEmpty()) return Optional.empty();
 
+        return Observation.createNotStarted("discord.youtube.lookup", observationRegistry)
+                .observe(() -> doFetch(videoId.get(), url));
+    }
+
+    private Optional<VideoInfo> doFetch(String videoId, String url) {
         try {
-            registry.counter("discord.youtube.lookups").increment();
             var request = HttpRequest.newBuilder()
-                    .uri(URI.create(API_URL.formatted(videoId.get(), apiKey)))
+                    .uri(URI.create(API_URL.formatted(videoId, apiKey)))
                     .GET()
                     .build();
 
@@ -71,9 +76,8 @@ public class YouTubeService {
                     formatDate(snippet.get("publishedAt").asText())
             ));
         } catch (Exception e) {
-            registry.counter("discord.youtube.errors").increment();
             log.error("Failed to fetch YouTube video info for: {}", url, e);
-            return Optional.empty();
+            throw new RuntimeException(e);
         }
     }
 
