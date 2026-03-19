@@ -205,7 +205,7 @@
           DISCORD_BRIDGE_BOT_IDS={{ vault_discord_bridge_bot_ids }}
           GOOGLE_API_KEY={{ vault_google_api_key }}
           GRAFANA_OTLP_ENDPOINT={{ vault_grafana_otlp_endpoint }}
-          GRAFANA_OTLP_BASE_ENDPOINT={{ vault_grafana_otlp_base_endpoint }}
+          GRAFANA_OTLP_TRACE_ENDPOINT={{ vault_grafana_otlp_trace_endpoint }}
           GRAFANA_OTLP_AUTH_HEADER={{ vault_grafana_otlp_auth_header }}
         dest: "{{ app_dir }}/.env"
         owner: "{{ app_user }}"

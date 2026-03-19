@@ -25,7 +25,7 @@ import java.util.regex.Pattern;
 public class YouTubeService {
 
     private static final Pattern VIDEO_ID_PATTERN =
-            Pattern.compile("(?:youtube\\.com/watch\\?v=|youtu\\.be/)([a-zA-Z0-9_-]{11})");
+            Pattern.compile("(?:(?:music\\.)?youtube\\.com/watch\\?v=|youtu\\.be/)([a-zA-Z0-9_-]{11})");
 
     private static final String API_URL =
             "https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=%s&key=%s";

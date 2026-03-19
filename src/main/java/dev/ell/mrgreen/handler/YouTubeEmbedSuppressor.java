@@ -12,7 +12,7 @@ import java.util.regex.Pattern;
 public class YouTubeEmbedSuppressor implements MessageHandler {
 
     private static final Pattern YOUTUBE_URL =
-            Pattern.compile("https?://(www\\.)?(youtube\\.com|youtu\\.be)/\\S+");
+            Pattern.compile("(?<![\\S])https?://(www\\.)?(youtube\\.com|music\\.youtube\\.com|youtu\\.be)/\\S+");
 
     private final YouTubeService youTubeService;
 

@@ -28,6 +28,6 @@ management:
     tracing:
       export:
         otlp:
-          endpoint: ${GRAFANA_OTLP_BASE_ENDPOINT:}
+          endpoint: ${GRAFANA_OTLP_TRACE_ENDPOINT:}
           headers:
             Authorization: ${GRAFANA_OTLP_AUTH_HEADER:}
