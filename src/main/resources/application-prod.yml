@@ -2,3 +2,5 @@ logging:
   structured:
     format:
       console: logstash
+  level:
+    io.micrometer: DEBUG
