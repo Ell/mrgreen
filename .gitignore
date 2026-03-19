@@ -37,7 +37,6 @@ out/
 .vscode/
 
 AGENTS.md
-application-prod.yml
 .claude/
 
 ### Terraform ###
