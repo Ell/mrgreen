@@ -1,7 +1,10 @@
 all:
   hosts:
     mrgreen:
-      ansible_host: "{{ lookup('pipe', 'terraform -chdir=../terraform output -raw server_ip') }}"
+      # Use Tailscale hostname after initial setup.
+      # For first run (before Tailscale), override with:
+      #   ansible-playbook ... -e ansible_host=178.104.92.5
+      ansible_host: mrgreen
       ansible_user: root
       ansible_ssh_private_key_file: ~/.ssh/id_ed25519
       ansible_ssh_common_args: '-o StrictHostKeyChecking=accept-new'

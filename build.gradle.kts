@@ -25,6 +25,8 @@ repositories {
 
 dependencies {
 	implementation("org.springframework.boot:spring-boot-starter")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("io.micrometer:micrometer-registry-otlp")
     implementation("com.fasterxml.jackson.core:jackson-databind")
 
     implementation("net.dv8tion:JDA:5.1.0") {

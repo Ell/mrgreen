@@ -113,6 +113,73 @@
       debug:
         var: tailscale_status.stdout_lines
 
+    # --- Grafana Alloy (log shipping to Grafana Cloud Loki) ---
+    - name: Add Grafana GPG key
+      shell: |
+        curl -fsSL https://apt.grafana.com/gpg.key | gpg --dearmor -o /usr/share/keyrings/grafana.gpg
+      args:
+        creates: /usr/share/keyrings/grafana.gpg
+
+    - name: Add Grafana apt repository
+      copy:
+        content: "deb [signed-by=/usr/share/keyrings/grafana.gpg arch=arm64] https://apt.grafana.com stable main"
+        dest: /etc/apt/sources.list.d/grafana.list
+
+    - name: Update apt cache after adding Grafana repo
+      apt:
+        update_cache: true
+
+    - name: Install Grafana Alloy
+      apt:
+        name: alloy
+        state: present
+
+    - name: Configure Grafana Alloy
+      copy:
+        content: |
+          loki.relabel "journal" {
+            forward_to = []
+
+            rule {
+              source_labels = ["__journal__systemd_unit"]
+              target_label  = "unit"
+            }
+
+            rule {
+              source_labels = ["__journal__hostname"]
+              target_label  = "hostname"
+            }
+          }
+
+          loki.source.journal "mrgreen" {
+            forward_to    = [loki.write.grafana_cloud.receiver]
+            relabel_rules = loki.relabel.journal.rules
+            matches       = "_SYSTEMD_UNIT=mrgreen.service"
+            labels        = {
+              job = "mrgreen",
+            }
+          }
+
+          loki.write "grafana_cloud" {
+            endpoint {
+              url = "{{ vault_grafana_loki_url }}"
+
+              basic_auth {
+                username = "{{ vault_grafana_loki_username }}"
+                password = "{{ vault_grafana_loki_password }}"
+              }
+            }
+          }
+        dest: /etc/alloy/config.alloy
+        mode: "0644"
+      notify: restart alloy
+
+    - name: Enable and start Alloy
+      systemd:
+        name: alloy
+        enabled: true
+        state: started
+
     # --- Application user and directory ---
     - name: Create mrgreen system user
       user:
@@ -137,6 +204,8 @@
           DISCORD_CLIENT_ID={{ vault_discord_client_id }}
           DISCORD_BRIDGE_BOT_IDS={{ vault_discord_bridge_bot_ids }}
           GOOGLE_API_KEY={{ vault_google_api_key }}
+          GRAFANA_OTLP_ENDPOINT={{ vault_grafana_otlp_endpoint }}
+          GRAFANA_OTLP_AUTH_HEADER={{ vault_grafana_otlp_auth_header }}
         dest: "{{ app_dir }}/.env"
         owner: "{{ app_user }}"
         group: "{{ app_user }}"
@@ -155,7 +224,7 @@
           User={{ app_user }}
           WorkingDirectory={{ app_dir }}
           EnvironmentFile={{ app_dir }}/.env
-          ExecStart=/usr/bin/java -Xmx512m -jar {{ app_dir }}/app.jar
+          ExecStart=/usr/bin/java -Xmx512m -Dspring.profiles.active=prod -jar {{ app_dir }}/app.jar
           Restart=always
           RestartSec=10
 
@@ -172,3 +241,9 @@
       systemd:
         name: "{{ service_name }}"
         enabled: true
+
+  handlers:
+    - name: restart alloy
+      systemd:
+        name: alloy
+        state: restarted

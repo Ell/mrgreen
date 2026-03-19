@@ -3,6 +3,7 @@ package dev.ell.mrgreen.service;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.ell.mrgreen.config.GoogleProperties;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -29,11 +30,13 @@ public class YouTubeService {
             "https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=%s&key=%s";
 
     private final String apiKey;
+    private final MeterRegistry registry;
     private final HttpClient httpClient = HttpClient.newHttpClient();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public YouTubeService(GoogleProperties properties) {
+    public YouTubeService(GoogleProperties properties, MeterRegistry registry) {
         this.apiKey = properties.apiKey();
+        this.registry = registry;
     }
 
     public record VideoInfo(String title, String channel, String duration, String views, String uploadDate) {}
@@ -43,6 +46,7 @@ public class YouTubeService {
         if (videoId.isEmpty()) return Optional.empty();
 
         try {
+            registry.counter("discord.youtube.lookups").increment();
             var request = HttpRequest.newBuilder()
                     .uri(URI.create(API_URL.formatted(videoId.get(), apiKey)))
                     .GET()
@@ -67,6 +71,7 @@ public class YouTubeService {
                     formatDate(snippet.get("publishedAt").asText())
             ));
         } catch (Exception e) {
+            registry.counter("discord.youtube.errors").increment();
             log.error("Failed to fetch YouTube video info for: {}", url, e);
             return Optional.empty();
         }
