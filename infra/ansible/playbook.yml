@@ -1,0 +1,174 @@
+---
+- name: Configure mrgreen server
+  hosts: mrgreen
+  become: true
+
+  tasks:
+    # --- System updates ---
+    - name: Update apt cache and upgrade packages
+      apt:
+        update_cache: true
+        upgrade: dist
+        cache_valid_time: 3600
+
+    # --- Java 25 (Eclipse Temurin via Adoptium) ---
+    - name: Install prerequisites
+      apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+        state: present
+
+    - name: Add Adoptium GPG key
+      shell: |
+        curl -fsSL https://packages.adoptium.net/artifactory/api/gpg/key/public | gpg --dearmor -o /usr/share/keyrings/adoptium.gpg
+      args:
+        creates: /usr/share/keyrings/adoptium.gpg
+
+    - name: Add Adoptium apt repository
+      copy:
+        content: "deb [signed-by=/usr/share/keyrings/adoptium.gpg arch=arm64] https://packages.adoptium.net/artifactory/deb noble main"
+        dest: /etc/apt/sources.list.d/adoptium.list
+
+    - name: Update apt cache after adding Adoptium repo
+      apt:
+        update_cache: true
+
+    - name: Install Temurin JDK 25
+      apt:
+        name: "temurin-{{ java_version }}-jdk"
+        state: present
+      register: java_install
+      ignore_errors: true
+
+    - name: Fall back to Temurin JRE 25 if JDK not available
+      apt:
+        name: "temurin-{{ java_version }}-jre"
+        state: present
+      when: java_install is failed
+      register: jre_install
+      ignore_errors: true
+
+    - name: Fall back to manual JDK install if apt packages not available
+      block:
+        - name: Download Temurin JDK 25 ARM64
+          get_url:
+            url: "https://api.adoptium.net/v3/binary/latest/25/ga/linux/aarch64/jdk/hotspot/normal/eclipse"
+            dest: /tmp/temurin-25.tar.gz
+
+        - name: Create /opt/java directory
+          file:
+            path: /opt/java
+            state: directory
+
+        - name: Extract Temurin JDK
+          unarchive:
+            src: /tmp/temurin-25.tar.gz
+            dest: /opt/java
+            remote_src: true
+
+        - name: Find extracted JDK directory
+          find:
+            paths: /opt/java
+            patterns: "jdk-25*"
+            file_type: directory
+          register: jdk_dir
+
+        - name: Set up java alternatives
+          alternatives:
+            name: java
+            path: "{{ jdk_dir.files[0].path }}/bin/java"
+            link: /usr/bin/java
+
+      when: java_install is failed and jre_install is failed
+
+    - name: Verify Java installation
+      command: java -version
+      register: java_version_output
+      changed_when: false
+
+    - name: Show Java version
+      debug:
+        var: java_version_output.stderr_lines
+
+    # --- Tailscale ---
+    - name: Install Tailscale
+      shell: curl -fsSL https://tailscale.com/install.sh | sh
+      args:
+        creates: /usr/bin/tailscale
+
+    - name: Start and authenticate Tailscale
+      command: tailscale up --authkey={{ vault_tailscale_auth_key }} --ssh
+      register: tailscale_result
+      changed_when: "'Success' in tailscale_result.stdout or tailscale_result.rc == 0"
+
+    - name: Verify Tailscale status
+      command: tailscale status
+      register: tailscale_status
+      changed_when: false
+
+    - name: Show Tailscale status
+      debug:
+        var: tailscale_status.stdout_lines
+
+    # --- Application user and directory ---
+    - name: Create mrgreen system user
+      user:
+        name: "{{ app_user }}"
+        system: true
+        shell: /usr/sbin/nologin
+        create_home: false
+
+    - name: Create application directory
+      file:
+        path: "{{ app_dir }}"
+        state: directory
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: "0755"
+
+    # --- Environment file ---
+    - name: Create .env file
+      copy:
+        content: |
+          DISCORD_TOKEN={{ vault_discord_token }}
+          DISCORD_CLIENT_ID={{ vault_discord_client_id }}
+          DISCORD_BRIDGE_BOT_IDS={{ vault_discord_bridge_bot_ids }}
+          GOOGLE_API_KEY={{ vault_google_api_key }}
+        dest: "{{ app_dir }}/.env"
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: "0600"
+
+    # --- Systemd service ---
+    - name: Create systemd service
+      copy:
+        content: |
+          [Unit]
+          Description=mrgreen Discord bot
+          After=network.target
+
+          [Service]
+          Type=simple
+          User={{ app_user }}
+          WorkingDirectory={{ app_dir }}
+          EnvironmentFile={{ app_dir }}/.env
+          ExecStart=/usr/bin/java -Xmx512m -jar {{ app_dir }}/app.jar
+          Restart=always
+          RestartSec=10
+
+          [Install]
+          WantedBy=multi-user.target
+        dest: /etc/systemd/system/{{ service_name }}.service
+        mode: "0644"
+
+    - name: Reload systemd
+      systemd:
+        daemon_reload: true
+
+    - name: Enable mrgreen service
+      systemd:
+        name: "{{ service_name }}"
+        enabled: true

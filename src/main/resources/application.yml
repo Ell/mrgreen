@@ -1,0 +1,14 @@
+spring:
+  main:
+    web-application-type: none
+  application:
+    name: "mrgreen"
+
+discord:
+  token: ${DISCORD_TOKEN}
+  client-id: ${DISCORD_CLIENT_ID}
+  prefix: "%"
+  bridge-bot-ids: ${DISCORD_BRIDGE_BOT_IDS:}
+
+google:
+  api-key: ${GOOGLE_API_KEY}

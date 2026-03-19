@@ -1,0 +1,5 @@
+app_name: mrgreen
+app_dir: /opt/mrgreen
+app_user: mrgreen
+service_name: mrgreen
+java_version: "25"
