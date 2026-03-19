@@ -1,0 +1,26 @@
+spring:
+  main:
+    web-application-type: none
+
+discord:
+  token: test-token
+  client-id: "0"
+  prefix: "%"
+  bridge-bot-ids: ""
+
+google:
+  api-key: test-key
+
+management:
+  otlp:
+    metrics:
+      export:
+        enabled: false
+  tracing:
+    sampling:
+      probability: 0
+  opentelemetry:
+    tracing:
+      export:
+        otlp:
+          endpoint: http://localhost:4318
