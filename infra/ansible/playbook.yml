@@ -208,6 +208,8 @@
           GRAFANA_OTLP_TRACE_ENDPOINT={{ vault_grafana_otlp_trace_endpoint }}
           GRAFANA_OTLP_AUTH_HEADER={{ vault_grafana_otlp_auth_header }}
           DB_PATH={{ app_dir }}/mrgreen.db
+          TWITCH_CLIENT_ID={{ vault_twitch_client_id }}
+          TWITCH_CLIENT_SECRET={{ vault_twitch_client_secret }}
         dest: "{{ app_dir }}/.env"
         owner: "{{ app_user }}"
         group: "{{ app_user }}"

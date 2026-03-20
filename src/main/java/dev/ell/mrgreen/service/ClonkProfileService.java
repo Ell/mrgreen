@@ -25,7 +25,14 @@ public class ClonkProfileService {
         this.observationRegistry = observationRegistry;
     }
 
-    public record ClonkProfile(long boosts) {
+    public record ClonkProfile(
+            String name,
+            String color,
+            String identity,
+            String element,
+            String faction,
+            long boost
+    ) {
     }
 
     public Optional<ClonkProfile> getProfile(String username) {
@@ -43,9 +50,14 @@ public class ClonkProfileService {
             var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
             var message = SexprParser.parse(response.body());
 
+            var name = message.get(":name").orElseThrow().asStr();
+            var color = message.get(":color").orElseThrow().asStr();
+            var identity = message.get(":identity").orElseThrow().asStr();
+            var element = message.get(":element").orElseThrow().asStr();
+            var faction = ((SexprParser.SExpr.Sym) message.get(":faction").orElseThrow()).name();
             var boost = message.get(":boost").orElseThrow().asNum();
 
-            return Optional.of(new ClonkProfile(boost));
+            return Optional.of(new ClonkProfile(name, color, identity, element, faction, boost));
         } catch (Exception e) {
             log.error("Failed to fetch clonk profile for: {}", username, e);
             throw new RuntimeException(e);

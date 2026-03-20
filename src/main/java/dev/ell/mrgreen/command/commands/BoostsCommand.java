@@ -1,5 +1,8 @@
-package dev.ell.mrgreen.command;
+package dev.ell.mrgreen.command.commands;
 
+import dev.ell.mrgreen.command.CommandContext;
+import dev.ell.mrgreen.command.PrefixCommand;
+import dev.ell.mrgreen.command.SlashCommand;
 import dev.ell.mrgreen.service.ClonkProfileService;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -35,7 +38,7 @@ public class BoostsCommand implements SlashCommand, PrefixCommand {
         var profile = clonkProfileService.getProfile(username);
 
         return profile
-                .map(clonkProfile -> "%s has %s boosts".formatted(username, clonkProfile.boosts()))
+                .map(clonkProfile -> "%s has %s boosts".formatted(username, clonkProfile.boost()))
                 .orElseGet(() -> "No boosts found for username: " + username);
 
     }

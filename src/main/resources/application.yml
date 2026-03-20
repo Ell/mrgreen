@@ -22,6 +22,10 @@ discord:
 google:
   api-key: ${GOOGLE_API_KEY}
 
+twitch:
+  client-id: ${TWITCH_CLIENT_ID}
+  client-secret: ${TWITCH_CLIENT_SECRET}
+
 management:
   otlp:
     metrics:

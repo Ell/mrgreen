@@ -1,4 +1,4 @@
-package dev.ell.mrgreen.handler;
+package dev.ell.mrgreen.handler.handlers;
 
 import dev.ell.mrgreen.service.YouTubeService;
 import lombok.extern.slf4j.Slf4j;
