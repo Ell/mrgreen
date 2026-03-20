@@ -1,5 +1,6 @@
 package dev.ell.mrgreen.handler.handlers;
 
+import dev.ell.mrgreen.config.DiscordProperties;
 import dev.ell.mrgreen.service.YouTubeService;
 import lombok.extern.slf4j.Slf4j;
 import net.dv8tion.jda.api.entities.Message;
@@ -10,10 +11,7 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Slf4j
 @Component
@@ -21,6 +19,7 @@ import java.util.Set;
 public class YouTubeEmbedSuppressor extends ListenerAdapter {
 
     private final YouTubeService youTubeService;
+    private final Set<String> bridgeBotIds;
     private final Set<Long> processedMessages = Collections.newSetFromMap(
             Collections.synchronizedMap(new LinkedHashMap<>(16, 0.75f, false) {
                 @Override
@@ -30,19 +29,22 @@ public class YouTubeEmbedSuppressor extends ListenerAdapter {
             })
     );
 
-    public YouTubeEmbedSuppressor(YouTubeService youTubeService) {
+    public YouTubeEmbedSuppressor(YouTubeService youTubeService, DiscordProperties properties) {
         this.youTubeService = youTubeService;
+        this.bridgeBotIds = new HashSet<>(properties.bridgeBotIds());
     }
 
     @Override
     public void onMessageReceived(@NonNull MessageReceivedEvent event) {
-        if (event.getAuthor().isBot() || event.isWebhookMessage()) return;
+        if (event.isWebhookMessage()) return;
+        if (event.getAuthor().isBot() && !bridgeBotIds.contains(event.getAuthor().getId())) return;
         processEmbeds(event.getMessage());
     }
 
     @Override
     public void onMessageUpdate(@NonNull MessageUpdateEvent event) {
-        if (event.getAuthor().isBot() || event.getMessage().isWebhookMessage()) return;
+        if (event.getMessage().isWebhookMessage()) return;
+        if (event.getAuthor().isBot() && !bridgeBotIds.contains(event.getAuthor().getId())) return;
         processEmbeds(event.getMessage());
     }
 
