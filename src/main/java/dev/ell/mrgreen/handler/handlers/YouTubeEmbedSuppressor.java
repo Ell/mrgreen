@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.MessageUpdateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jspecify.annotations.NonNull;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
 import java.util.Collections;
@@ -16,6 +17,7 @@ import java.util.Set;
 
 @Slf4j
 @Component
+@ConditionalOnBean(YouTubeService.class)
 public class YouTubeEmbedSuppressor extends ListenerAdapter {
 
     private final YouTubeService youTubeService;

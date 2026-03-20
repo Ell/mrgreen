@@ -9,12 +9,14 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Objects;
 
 @Component
+@ConditionalOnBean(TwitchService.class)
 public class DeckLookupCommand implements SlashCommand, PrefixCommand {
     private static final String BASE_URL = "https://api.colonq.computer/api/tcg/binder/";
 

@@ -3,6 +3,7 @@ package dev.ell.mrgreen.service;
 import dev.ell.mrgreen.clients.helix.HelixClient;
 import dev.ell.mrgreen.config.TwitchProperties;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -10,6 +11,7 @@ import java.util.Optional;
 
 @Slf4j
 @Service
+@ConditionalOnProperty(name = "twitch.client-id")
 public class TwitchService {
     private final HelixClient helixClient;
 
