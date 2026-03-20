@@ -46,11 +46,11 @@ public class DeckLookupCommand implements SlashCommand, PrefixCommand {
         var twitchUser = twitchService.getUserByUsername(username);
 
         if (twitchUser.isEmpty()) {
-            event.reply("User not found").queue();
+            event.reply("User not found").setEphemeral(true).queue();
             return;
         }
 
-        event.reply("Deck URL for %s: %s".formatted(username, getDeckUrl(twitchUser.get().id()))).queue();
+        event.reply("Deck URL for %s: %s".formatted(username, getDeckUrl(twitchUser.get().id()))).setEphemeral(true).queue();
     }
 
     @Override

@@ -46,11 +46,12 @@ public class ClonkProfileLookup implements SlashCommand, PrefixCommand {
         var twitchUser = twitchService.getUserByUsername(username);
 
         if (twitchUser.isEmpty()) {
-            event.reply("User not found").queue();
+            event.reply("User not found").setEphemeral(true).queue();
+
             return;
         }
 
-        event.reply("Clonk profile URL for %s: %s".formatted(username, getProfileUrl(twitchUser.get().id()))).queue();
+        event.reply("Clonk profile URL for %s: %s".formatted(username, getProfileUrl(twitchUser.get().id()))).setEphemeral(true).queue();
     }
 
     @Override
