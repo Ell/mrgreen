@@ -26,7 +26,7 @@ public class PingCommand implements SlashCommand, PrefixCommand {
     @Override
     public void execute(SlashCommandInteractionEvent event) {
         var ping = event.getJDA().getGatewayPing();
-        event.reply("Pong! **" + ping + "ms**").queue();
+        event.reply("Pong! **" + ping + "ms**").setEphemeral(true).queue();
     }
 
     @Override

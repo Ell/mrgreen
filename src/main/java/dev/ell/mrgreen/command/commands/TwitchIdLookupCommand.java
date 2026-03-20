@@ -40,10 +40,10 @@ public class TwitchIdLookupCommand implements SlashCommand, PrefixCommand {
                 .getUserByUsername(Objects.requireNonNull(event.getOption("username")).getAsString());
 
         if (fetchedUser.isEmpty()) {
-            event.reply("User not found").queue();
+            event.reply("User not found").setEphemeral(true).queue();
         } else {
             var twitchUser = fetchedUser.get();
-            event.reply("Twitch ID for user %s: %s".formatted(twitchUser.displayName(), twitchUser.id())).queue();
+            event.reply("Twitch ID for user %s: %s".formatted(twitchUser.displayName(), twitchUser.id())).setEphemeral(true).queue();
         }
     }
 

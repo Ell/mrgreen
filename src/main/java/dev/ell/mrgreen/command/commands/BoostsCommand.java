@@ -48,7 +48,7 @@ public class BoostsCommand implements SlashCommand, PrefixCommand {
         var username = Objects.requireNonNull(event.getOption("username")).getAsString();
         var response = getResponse(username);
 
-        event.reply(response).queue();
+        event.reply(response).setEphemeral(true).queue();
     }
 
     @Override
