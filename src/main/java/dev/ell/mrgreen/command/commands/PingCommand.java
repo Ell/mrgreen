@@ -1,5 +1,8 @@
-package dev.ell.mrgreen.command;
+package dev.ell.mrgreen.command.commands;
 
+import dev.ell.mrgreen.command.CommandContext;
+import dev.ell.mrgreen.command.PrefixCommand;
+import dev.ell.mrgreen.command.SlashCommand;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
