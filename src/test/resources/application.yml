@@ -15,8 +15,6 @@ discord:
   prefix: "%"
   bridge-bot-ids: ""
 
-google:
-  api-key: test-key
 
 management:
   otlp:

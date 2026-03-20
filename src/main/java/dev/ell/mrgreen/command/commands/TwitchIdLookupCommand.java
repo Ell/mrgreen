@@ -5,16 +5,19 @@ import dev.ell.mrgreen.command.PrefixCommand;
 import dev.ell.mrgreen.command.SlashCommand;
 import dev.ell.mrgreen.service.TwitchService;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Objects;
 
 @Component
+@ConditionalOnBean(TwitchService.class)
 public class TwitchIdLookupCommand implements SlashCommand, PrefixCommand {
     private final TwitchService twitchService;
 

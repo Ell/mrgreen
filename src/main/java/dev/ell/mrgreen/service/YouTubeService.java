@@ -6,6 +6,7 @@ import dev.ell.mrgreen.config.GoogleProperties;
 import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationRegistry;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
@@ -22,6 +23,7 @@ import java.util.regex.Pattern;
 
 @Slf4j
 @Service
+@ConditionalOnProperty(name = "google.api-key")
 public class YouTubeService {
 
     private static final Pattern VIDEO_ID_PATTERN =
