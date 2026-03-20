@@ -1,6 +1,5 @@
 package dev.ell.mrgreen.clients.helix;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.ell.mrgreen.clients.helix.dtos.UsersResponse;
 
@@ -16,7 +15,7 @@ import java.util.stream.Collectors;
 public record HelixClient(String clientId, String clientSecret) {
 
     private static final String TOKEN_URL = "https://id.twitch.tv/oauth2/token";
-    private static final String USERS_URL = "https://api.twitch.tv/helix/users";
+    private static final String HELIX_BASE_URL = "https://api.twitch.tv/helix/";
     private static final HttpClient httpClient = HttpClient.newHttpClient();
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -32,7 +31,7 @@ public record HelixClient(String clientId, String clientSecret) {
                 .map(u -> "login=" + u)
                 .collect(Collectors.joining("&"));
         var request = HttpRequest.newBuilder()
-                .uri(URI.create(USERS_URL + "?" + query))
+                .uri(URI.create(HELIX_BASE_URL + "/users" + "?" + query))
                 .header("Authorization", "Bearer " + getToken())
                 .header("Client-Id", clientId)
                 .GET()
