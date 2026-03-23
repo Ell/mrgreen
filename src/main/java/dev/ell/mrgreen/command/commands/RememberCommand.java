@@ -7,6 +7,7 @@ import dev.ell.mrgreen.service.RememberService;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
 import org.springframework.stereotype.Component;
@@ -64,6 +65,8 @@ public class RememberCommand implements SlashCommand, PrefixCommand {
         var createdBy = ctx.source() == CommandContext.Source.IRC ? ctx.ircUsername() : event.getAuthor().getName();
 
         rememberService.addEntry(guildId, key, value, createdBy);
-        event.getChannel().sendMessage("Remembered %s: %s".formatted(key, value)).queue();
+        event.getMessage().suppressEmbeds(true).queue();
+        var msg = new MessageCreateBuilder().setContent("Remembered %s: %s".formatted(key, value)).setSuppressEmbeds(true).build();
+        event.getChannel().sendMessage(msg).queue();
     }
 }
