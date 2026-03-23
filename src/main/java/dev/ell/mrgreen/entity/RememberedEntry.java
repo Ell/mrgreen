@@ -26,6 +26,7 @@ public class RememberedEntry {
     private String createdBy;
 
     @Column(name = "created_at", nullable = false, columnDefinition = "text")
+    @Convert(converter = InstantStringConverter.class)
     private Instant createdAt;
 
     protected RememberedEntry() {}
