@@ -79,11 +79,22 @@ public class CommandDispatcher extends ListenerAdapter {
     public void onMessageReceived(@NonNull MessageReceivedEvent event) {
         MessageParser.parse(event, bridgeBotIds, "CommandDispatcher").ifPresent(parsed -> {
             var content = parsed.content();
-            if (!content.startsWith(prefix)) return;
 
-            var parts = content.substring(prefix.length()).trim().split("\\s+");
-            var name = parts[0].toLowerCase();
-            var args = parts.length > 1 ? Arrays.asList(parts).subList(1, parts.length) : List.<String>of();
+            String name;
+            List<String> args;
+
+            if (content.startsWith("?") && content.length() > 1) {
+                // ? shortcut for lookup: ?foo → lookup [foo]
+                name = "lookup";
+                var parts = content.substring(1).trim().split("\\s+");
+                args = Arrays.asList(parts);
+            } else if (content.startsWith(prefix)) {
+                var parts = content.substring(prefix.length()).trim().split("\\s+");
+                name = parts[0].toLowerCase();
+                args = parts.length > 1 ? Arrays.asList(parts).subList(1, parts.length) : List.of();
+            } else {
+                return;
+            }
 
             var command = prefixCommands.get(name);
             if (command == null) return;
