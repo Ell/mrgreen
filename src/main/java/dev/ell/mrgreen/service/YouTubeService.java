@@ -1,6 +1,5 @@
 package dev.ell.mrgreen.service;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import dev.ell.mrgreen.config.GoogleProperties;
 import io.micrometer.observation.Observation;
@@ -8,11 +7,8 @@ import io.micrometer.observation.ObservationRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.text.NumberFormat;
 import java.time.Duration;
 import java.time.LocalDate;
@@ -32,14 +28,17 @@ public class YouTubeService {
     private static final String API_URL =
             "https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails,statistics&id=%s&key=%s";
 
+    private final RestClient restClient;
+    private final ObjectMapper objectMapper;
     private final String apiKey;
     private final ObservationRegistry observationRegistry;
-    private final HttpClient httpClient = HttpClient.newHttpClient();
-    private final ObjectMapper objectMapper = new ObjectMapper();
 
-    public YouTubeService(GoogleProperties properties, ObservationRegistry observationRegistry) {
+    public YouTubeService(GoogleProperties properties, ObservationRegistry observationRegistry,
+                          RestClient.Builder restClientBuilder, ObjectMapper objectMapper) {
         this.apiKey = properties.apiKey();
         this.observationRegistry = observationRegistry;
+        this.restClient = restClientBuilder.clone().build();
+        this.objectMapper = objectMapper;
     }
 
     public record VideoInfo(String title, String channel, String duration, String views, String uploadDate) {}
@@ -54,13 +53,11 @@ public class YouTubeService {
 
     private Optional<VideoInfo> doFetch(String videoId, String url) {
         try {
-            var request = HttpRequest.newBuilder()
-                    .uri(URI.create(API_URL.formatted(videoId, apiKey)))
-                    .GET()
-                    .build();
-
-            var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            var root = objectMapper.readTree(response.body());
+            var response = restClient.get()
+                    .uri(API_URL.formatted(videoId, apiKey))
+                    .retrieve()
+                    .body(String.class);
+            var root = objectMapper.readTree(response);
             var items = root.get("items");
 
             if (items == null || items.isEmpty()) return Optional.empty();
@@ -79,7 +76,7 @@ public class YouTubeService {
             ));
         } catch (Exception e) {
             log.error("Failed to fetch YouTube video info for: {}", url, e);
-            throw new RuntimeException(e);
+            return Optional.empty();
         }
     }
 

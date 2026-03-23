@@ -11,12 +11,16 @@ import org.jspecify.annotations.NonNull;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
 
+import java.time.Duration;
+import java.time.OffsetDateTime;
 import java.util.*;
 
 @Slf4j
 @Component
 @ConditionalOnBean(YouTubeService.class)
 public class YouTubeEmbedSuppressor extends ListenerAdapter {
+
+    private static final Duration MAX_MESSAGE_AGE = Duration.ofMinutes(5);
 
     private final YouTubeService youTubeService;
     private final Set<String> bridgeBotIds;
@@ -49,6 +53,9 @@ public class YouTubeEmbedSuppressor extends ListenerAdapter {
     }
 
     private void processEmbeds(Message message) {
+        var age = Duration.between(message.getTimeCreated(), OffsetDateTime.now());
+        if (age.compareTo(MAX_MESSAGE_AGE) > 0) return;
+
         for (var embed : message.getEmbeds()) {
             var url = embed.getUrl();
             if (url != null && isYouTubeUrl(url)) {

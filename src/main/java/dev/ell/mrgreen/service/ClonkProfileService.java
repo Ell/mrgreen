@@ -5,11 +5,8 @@ import io.micrometer.observation.Observation;
 import io.micrometer.observation.ObservationRegistry;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClient;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 import java.util.Optional;
 
 @Slf4j
@@ -17,12 +14,12 @@ import java.util.Optional;
 public class ClonkProfileService {
     private static final String API_URL = "https://api.colonq.computer/api/user/%s";
 
-    private final HttpClient httpClient = HttpClient.newHttpClient();
-
+    private final RestClient restClient;
     private final ObservationRegistry observationRegistry;
 
-    public ClonkProfileService(ObservationRegistry observationRegistry) {
+    public ClonkProfileService(ObservationRegistry observationRegistry, RestClient.Builder restClientBuilder) {
         this.observationRegistry = observationRegistry;
+        this.restClient = restClientBuilder.clone().build();
     }
 
     public record ClonkProfile(
@@ -43,24 +40,23 @@ public class ClonkProfileService {
 
     private Optional<ClonkProfile> doFetch(String username) {
         try {
-            var request = HttpRequest.newBuilder()
-                    .uri(URI.create(API_URL.formatted(username)))
-                    .GET()
-                    .build();
-            var response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-            var message = SexprParser.parse(response.body());
+            var response = restClient.get()
+                    .uri(API_URL.formatted(username))
+                    .retrieve()
+                    .body(String.class);
+            var message = SexprParser.parse(response);
 
             var name = message.get(":name").orElseThrow().asStr();
             var color = message.get(":color").orElseThrow().asStr();
             var identity = message.get(":identity").orElseThrow().asStr();
             var element = message.get(":element").orElseThrow().asStr();
-            var faction = ((SexprParser.SExpr.Sym) message.get(":faction").orElseThrow()).name();
+            var faction = message.get(":faction").orElseThrow().asSym();
             var boost = message.get(":boost").orElseThrow().asNum();
 
             return Optional.of(new ClonkProfile(name, color, identity, element, faction, boost));
         } catch (Exception e) {
             log.error("Failed to fetch clonk profile for: {}", username, e);
-            throw new RuntimeException(e);
+            return Optional.empty();
         }
     }
 }
