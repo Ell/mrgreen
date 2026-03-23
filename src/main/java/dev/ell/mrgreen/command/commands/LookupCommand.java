@@ -7,6 +7,8 @@ import dev.ell.mrgreen.entity.RememberedEntry;
 import dev.ell.mrgreen.service.RememberService;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
+import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import net.dv8tion.jda.api.interactions.commands.OptionType;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SlashCommandData;
@@ -91,7 +93,7 @@ public class LookupCommand implements SlashCommand, PrefixCommand {
         if (args.size() == 2) {
             try {
                 var index = Integer.parseInt(args.get(1));
-                event.getChannel().sendMessage(formatDetail(key, entries, index)).queue();
+                event.getChannel().sendMessage(noEmbeds(formatDetail(key, entries, index))).queue();
                 return;
             } catch (NumberFormatException ignored) {}
         }
@@ -104,7 +106,11 @@ public class LookupCommand implements SlashCommand, PrefixCommand {
             } catch (NumberFormatException ignored) {}
         }
 
-        event.getChannel().sendMessage(formatPage(key, entries, page)).queue();
+        event.getChannel().sendMessage(noEmbeds(formatPage(key, entries, page))).queue();
+    }
+
+    private static MessageCreateData noEmbeds(String content) {
+        return new MessageCreateBuilder().setContent(content).setSuppressEmbeds(true).build();
     }
 
     private String formatPage(String key, List<RememberedEntry> entries, int page) {
