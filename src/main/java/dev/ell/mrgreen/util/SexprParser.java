@@ -52,6 +52,10 @@ public class SexprParser {
             return ((Num) this).value();
         }
 
+        default String asSym() {
+            return ((Sym) this).name();
+        }
+
         default List<SExpr> asList() {
             return ((Lst) this).elements();
         }

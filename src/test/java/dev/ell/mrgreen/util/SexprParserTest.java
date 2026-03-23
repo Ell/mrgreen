@@ -46,7 +46,7 @@ class SexprParserTest {
         var result = SexprParser.parse(EXAMPLE);
         var faction = result.get(":faction").orElseThrow();
         assertInstanceOf(SExpr.Sym.class, faction);
-        assertEquals("nate", ((SExpr.Sym) faction).name());
+        assertEquals("nate", faction.asSym());
     }
 
     @Test
@@ -97,8 +97,8 @@ class SexprParserTest {
         var result = SexprParser.parse("(a . b)");
         assertInstanceOf(SExpr.Cons.class, result);
         var cons = (SExpr.Cons) result;
-        assertEquals("a", ((SExpr.Sym) cons.car()).name());
-        assertEquals("b", ((SExpr.Sym) cons.cdr()).name());
+        assertEquals("a", cons.car().asSym());
+        assertEquals("b", cons.cdr().asSym());
     }
 
     @Test
@@ -119,7 +119,7 @@ class SexprParserTest {
     void parseKeywordSymbol() {
         var result = SexprParser.parse(":foo");
         assertInstanceOf(SExpr.Sym.class, result);
-        assertEquals(":foo", ((SExpr.Sym) result).name());
+        assertEquals(":foo", result.asSym());
     }
 
     @Test
