@@ -84,10 +84,7 @@ public class LookupCommand implements SlashCommand, PrefixCommand {
         var key = args.getFirst();
         var entries = rememberService.getEntries(guildId, key);
 
-        if (entries.isEmpty()) {
-            event.getChannel().sendMessage("No entries found for %s".formatted(key)).queue();
-            return;
-        }
+        if (entries.isEmpty()) return;
 
         // ?foo 2 — detail view (second arg is a number)
         if (args.size() == 2) {

@@ -83,7 +83,7 @@ public class CommandDispatcher extends ListenerAdapter {
             String name;
             List<String> args;
 
-            if (content.startsWith("?") && content.length() > 1) {
+            if (content.startsWith("?") && content.length() > 1 && !content.chars().allMatch(c -> c == '?')) {
                 // ? shortcut for lookup: ?foo → lookup [foo]
                 name = "lookup";
                 var parts = content.substring(1).trim().split("\\s+");
