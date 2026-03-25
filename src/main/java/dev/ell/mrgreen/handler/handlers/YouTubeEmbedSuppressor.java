@@ -7,6 +7,7 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.events.message.MessageUpdateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import org.jspecify.annotations.NonNull;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.stereotype.Component;
@@ -66,7 +67,8 @@ public class YouTubeEmbedSuppressor extends ListenerAdapter {
                 youTubeService.fetchVideoInfo(url).ifPresent(info -> {
                     var reply = "%s — %s [%s | %s views | %s]".formatted(
                             info.title(), info.channel(), info.duration(), info.views(), info.uploadDate());
-                    message.reply(reply).queue();
+                    var replyData = new MessageCreateBuilder().setContent(reply).setSuppressEmbeds(true).build();
+                    message.reply(replyData).queue();
                 });
                 return;
             }
