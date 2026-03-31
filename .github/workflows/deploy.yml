@@ -25,6 +25,15 @@ jobs:
           authkey: ${{ secrets.TS_AUTHKEY }}
           tags: tag:ci-deploy
 
+      - name: Wait for Tailscale connectivity
+        run: |
+          for i in $(seq 1 10); do
+            tailscale ping --timeout=2s "$HOST" && break
+            sleep 2
+          done
+        env:
+          HOST: ${{ secrets.DEPLOY_HOST }}
+
       - name: Deploy to server
         env:
           SSH_KEY: ${{ secrets.DEPLOY_SSH_KEY }}
