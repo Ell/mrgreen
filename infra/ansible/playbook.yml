@@ -210,6 +210,7 @@
           DB_PATH={{ app_dir }}/mrgreen.db
           TWITCH_CLIENT_ID={{ vault_twitch_client_id }}
           TWITCH_CLIENT_SECRET={{ vault_twitch_client_secret }}
+          JUDGE0_API_KEY={{ vault_judge0_api_key }}
         dest: "{{ app_dir }}/.env"
         owner: "{{ app_user }}"
         group: "{{ app_user }}"

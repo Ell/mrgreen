@@ -2,6 +2,7 @@ package dev.ell.mrgreen;
 
 import dev.ell.mrgreen.config.DiscordProperties;
 import dev.ell.mrgreen.config.GoogleProperties;
+import dev.ell.mrgreen.config.Judge0Properties;
 import dev.ell.mrgreen.config.TwitchProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -11,6 +12,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 @EnableConfigurationProperties({
         DiscordProperties.class,
         GoogleProperties.class,
+        Judge0Properties.class,
         TwitchProperties.class
 })
 public class MrgreenApplication {
