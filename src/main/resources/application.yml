@@ -19,6 +19,10 @@ discord:
   prefix: "%"
   bridge-bot-ids: ${DISCORD_BRIDGE_BOT_IDS:}
 
+judge0:
+  api-key: ${JUDGE0_API_KEY:}
+  api-host: ${JUDGE0_API_HOST:judge0-ce.p.rapidapi.com}
+
 
 management:
   otlp:
