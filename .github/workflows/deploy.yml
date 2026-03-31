@@ -42,6 +42,6 @@ jobs:
           mkdir -p ~/.ssh
           echo "$SSH_KEY" > ~/.ssh/id_deploy
           chmod 600 ~/.ssh/id_deploy
-          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null
-          scp -i ~/.ssh/id_deploy build/libs/*.jar root@"$HOST":/opt/mrgreen/app.jar
-          ssh -i ~/.ssh/id_deploy root@"$HOST" "chown mrgreen:mrgreen /opt/mrgreen/app.jar && systemctl restart mrgreen"
+          ssh-keyscan -H "$HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
+          scp -o StrictHostKeyChecking=accept-new -i ~/.ssh/id_deploy build/libs/*.jar root@"$HOST":/opt/mrgreen/app.jar
+          ssh -o StrictHostKeyChecking=accept-new -i ~/.ssh/id_deploy root@"$HOST" "chown mrgreen:mrgreen /opt/mrgreen/app.jar && systemctl restart mrgreen"
