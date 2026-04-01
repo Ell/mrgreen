@@ -34,7 +34,7 @@ import java.util.stream.Collectors;
 public class EvalCommand extends ListenerAdapter implements SlashCommand, PrefixCommand {
 
     private static final int MAX_OUTPUT_LENGTH = 1900;
-    private static final Duration COOLDOWN = Duration.ofSeconds(10);
+    private static final Duration COOLDOWN = Duration.ofSeconds(60);
     private static final Pattern CODE_BLOCK_PATTERN = Pattern.compile("```(\\w+)?\\n([\\s\\S]*?)```");
     private static final Pattern IRC_PREFIX_PATTERN = Pattern.compile("^`?<[^>]+>`?\\s*");
     private static final String MODAL_ID = "eval-modal";
@@ -145,7 +145,7 @@ public class EvalCommand extends ListenerAdapter implements SlashCommand, Prefix
         }
 
         // Defer only for the actual submission (long-running)
-        event.deferReply().queue();
+        event.deferReply(true).queue();
 
         try {
             var result = judge0Service.submit(lang.get().id(), code);
